@@ -176,7 +176,7 @@ export default function NewBlogPage() {
               Use markdown format as this area only supports markdown format not
               plain text for styling.
             </span>{" "}
-            — To convert plain text, paste it into{" "}
+            — To convert plain text, upload the doc into{" "}
             <a
               href="https://claude.ai"
               target="_blank"
@@ -194,8 +194,8 @@ export default function NewBlogPage() {
             </a>{" "}
             with the prompt:{" "}
             <span className="text-foreground bg-muted px-1 py-0.5 rounded text-xs">
-              "Convert this to markdown with proper h1, h2, h3 headings, lists,
-              bold, italic, and links."
+              "Convert this docx file to markdown with proper h1, h2, h3
+              headings, lists, bold, italic, and links."
             </span>
           </FieldDescription>
         </Field>

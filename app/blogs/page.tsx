@@ -21,7 +21,7 @@ export default async function BlogsPage() {
 
       {blogs.length === 0 ? (
         <p className="text-muted-foreground font-mono">
-          No blogs found. Create one using the sidebar.
+          No blogs found. Create one using the sidebar or the button above.
         </p>
       ) : (
         <div className="rounded-lg overflow-hidden border border-border">
