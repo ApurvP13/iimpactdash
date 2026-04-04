@@ -44,11 +44,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="/">
                 <Image
-                  src="https://avatar.vercel.sh/iimpact"
+                  src="/logo.png"
                   alt="IIMpact"
-                  width={32}
-                  height={32}
-                  className="rounded-md"
+                  width={28}
+                  height={24}
+                  className=""
                 />
                 <span className="font-mono font-semibold">
                   IIMpact Enterprise
