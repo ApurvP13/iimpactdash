@@ -2,6 +2,17 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { deletePaper } from "@/actions/pyq-actions";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -62,9 +73,39 @@ export function PaperDataRow({
       </span>
 
       <div className="flex gap-2 shrink-0">
-        <Button variant="destructive" size="icon" onClick={handleDelete}>
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive" size="icon">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-mono">
+                Delete Paper?
+              </AlertDialogTitle>
+              <AlertDialogDescription className="font-mono">
+                This will permanently delete{" "}
+                <span className="text-foreground font-semibold">
+                  {section} {year} Slot {slot}
+                </span>{" "}
+                along with all its sets and questions. This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="font-mono">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                variant="destructive"
+                className="font-mono bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                onClick={handleDelete}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
