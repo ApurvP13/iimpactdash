@@ -36,6 +36,7 @@ function emptyQuestion(): DraftQuestion {
     explanation: "",
     is_tita: false,
     tita_answer: "",
+    video_url: "",
   };
 }
 
@@ -67,6 +68,7 @@ function paperToGroups(paper: FullPaper): DraftGroup[] {
         explanation: q.explanation,
         is_tita: q.is_tita,
         tita_answer: q.tita_answer,
+        video_url: q.video_url,
       })),
       order_index: set.order_index,
     })),
@@ -79,6 +81,7 @@ function paperToGroups(paper: FullPaper): DraftGroup[] {
         explanation: q.explanation,
         is_tita: q.is_tita,
         tita_answer: q.tita_answer,
+        video_url: q.video_url,
       },
       order_index: q.order_index,
     })),
@@ -204,6 +207,20 @@ function QuestionForm({
           placeholder="Explain the correct answer..."
           value={question.explanation}
           onChange={(e) => setField("explanation", e.target.value)}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label className="font-mono text-xs">
+          Video URL{" "}
+          <span className="text-muted-foreground">
+            (leave empty if no video link yet)
+          </span>
+        </Label>
+        <Input
+          className="font-mono text-sm"
+          placeholder="https://youtube.com/watch?v=..."
+          value={question.video_url}
+          onChange={(e) => setField("video_url", e.target.value)}
         />
       </div>
     </div>

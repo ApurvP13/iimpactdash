@@ -11,6 +11,7 @@ export type DraftQuestion = {
   explanation: string;
   is_tita: boolean;
   tita_answer: string;
+  video_url: string;
 };
 
 export type DraftSet = {
@@ -122,6 +123,7 @@ export async function savePaper(
             is_tita: q.is_tita,
             tita_answer: q.tita_answer,
             order_index: qi,
+            video_url: q.video_url,
           })),
         );
         if (qError) return { error: qError.message };
@@ -138,6 +140,7 @@ export async function savePaper(
         is_tita: q.is_tita,
         tita_answer: q.tita_answer,
         order_index: i,
+        video_url: q.video_url,
       });
       if (qError) return { error: qError.message };
     }
@@ -184,6 +187,7 @@ export type FullPaper = {
       tita_answer: string;
       order_index: number;
       set_id: string | null;
+      video_url: string;
     }[];
   }[];
   standalones: {
@@ -196,6 +200,7 @@ export type FullPaper = {
     tita_answer: string;
     order_index: number;
     set_id: string | null;
+    video_url: string;
   }[];
 };
 
@@ -285,6 +290,7 @@ export async function updatePaper(
             is_tita: q.is_tita,
             tita_answer: q.tita_answer,
             order_index: qi,
+            video_url: q.video_url,
           })),
         );
         if (qiError) return { error: qiError.message };
@@ -301,6 +307,7 @@ export async function updatePaper(
         is_tita: q.is_tita,
         tita_answer: q.tita_answer,
         order_index: i,
+        video_url: q.video_url,
       });
       if (qiError) return { error: qiError.message };
     }
