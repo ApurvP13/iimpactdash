@@ -1,6 +1,8 @@
 "use server";
 
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
+
 import { revalidatePath } from "next/cache";
 
 export type Blog = {
@@ -15,7 +17,7 @@ export type Blog = {
 };
 
 export async function getBlogs(): Promise<Blog[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("blogs")
     .select("*")
     .order("created_at", { ascending: false });
@@ -26,7 +28,7 @@ export async function getBlogs(): Promise<Blog[]> {
 
 export async function deleteBlog(id: string): Promise<{ error?: string }> {
   // 1. Get the image URL first
-  const { data: blog, error: fetchError } = await supabase
+  const { data: blog, error: fetchError } = await supabaseAdmin
     .from("blogs")
     .select("cover_image_url")
     .eq("id", id)
@@ -39,7 +41,7 @@ export async function deleteBlog(id: string): Promise<{ error?: string }> {
     const filename = blog.cover_image_url.split("/").pop();
 
     if (filename) {
-      const { error: storageError } = await supabase.storage
+      const { error: storageError } = await supabaseAdmin.storage
         .from("content-images")
         .remove([filename]); // Must be an array
 
@@ -51,7 +53,7 @@ export async function deleteBlog(id: string): Promise<{ error?: string }> {
   }
 
   // 3. Delete the database row
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await supabaseAdmin
     .from("blogs")
     .delete()
     .eq("id", id);
@@ -71,20 +73,20 @@ export async function createBlog(data: {
   slug: string;
   cover_image_url: string;
 }): Promise<{ error?: string }> {
-  const { error } = await supabase.from("blogs").insert([data]);
+  const { error } = await supabaseAdmin.from("blogs").insert([data]);
   if (error) return { error: error.message };
   return {};
 }
 
 export async function handleImageUpload(file: File): Promise<string> {
   const filename = `${Date.now()}-${file.name}`;
-  const { error } = await supabase.storage
+  const { error } = await supabaseAdmin.storage
     .from("content-images")
     .upload(filename, file);
 
   if (error) throw new Error(error.message);
 
-  const { data } = supabase.storage
+  const { data } = supabaseAdmin.storage
     .from("content-images")
     .getPublicUrl(filename);
 
@@ -92,7 +94,7 @@ export async function handleImageUpload(file: File): Promise<string> {
 }
 
 export async function getBlogById(id: string): Promise<Blog | null> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("blogs")
     .select("*")
     .eq("slug", id)
@@ -112,7 +114,7 @@ export async function updateBlog(
     cover_image_url: string;
   },
 ): Promise<{ error?: string }> {
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("blogs")
     .update({ ...data, updated_at: new Date().toISOString() })
     .eq("id", id);
@@ -127,13 +129,13 @@ export async function uploadBlogImage(
   const file = formData.get("file") as File;
   const filename = `${Date.now()}-${file.name}`;
 
-  const { error } = await supabase.storage
+  const { error } = await supabaseAdmin.storage
     .from("content-images")
     .upload(filename, file);
 
   if (error) return { error: error.message };
 
-  const { data } = supabase.storage
+  const { data } = supabaseAdmin.storage
     .from("content-images")
     .getPublicUrl(filename);
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export type Section = "VARC" | "DILR" | "QA";
 
@@ -45,7 +46,7 @@ export type PYQPaper = {
 };
 
 export async function getPapers(): Promise<PYQPaper[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("pyq_papers")
     .select("*")
     .order("created_at", { ascending: false });
@@ -57,19 +58,19 @@ export async function getPapers(): Promise<PYQPaper[]> {
 export async function deletePaper(id: string): Promise<{ error?: string }> {
   // questions and sets have paper_id foreign keys
   // delete questions first, then sets, then paper
-  const { error: qError } = await supabase
+  const { error: qError } = await supabaseAdmin
     .from("questions")
     .delete()
     .eq("paper_id", id);
   if (qError) return { error: qError.message };
 
-  const { error: sError } = await supabase
+  const { error: sError } = await supabaseAdmin
     .from("question_sets")
     .delete()
     .eq("paper_id", id);
   if (sError) return { error: sError.message };
 
-  const { error: pError } = await supabase
+  const { error: pError } = await supabaseAdmin
     .from("pyq_papers")
     .delete()
     .eq("id", id);
@@ -82,7 +83,7 @@ export async function savePaper(
   input: SavePaperInput,
 ): Promise<{ error?: string; paperId?: string }> {
   // 1. insert paper
-  const { data: paper, error: paperError } = await supabase
+  const { data: paper, error: paperError } = await supabaseAdmin
     .from("pyq_papers")
     .insert({ section: input.section, year: input.year, slot: input.slot })
     .select()
@@ -97,7 +98,7 @@ export async function savePaper(
     const group = input.groups[i];
 
     if (group.type === "set") {
-      const { data: set, error: setError } = await supabase
+      const { data: set, error: setError } = await supabaseAdmin
         .from("question_sets")
         .insert({
           paper_id: paperId,
@@ -112,7 +113,7 @@ export async function savePaper(
       if (setError) return { error: setError.message };
 
       if (group.questions.length > 0) {
-        const { error: qError } = await supabase.from("questions").insert(
+        const { error: qError } = await supabaseAdmin.from("questions").insert(
           group.questions.map((q, qi) => ({
             paper_id: paperId,
             set_id: set.id,
@@ -130,7 +131,7 @@ export async function savePaper(
       }
     } else {
       const q = group.question;
-      const { error: qError } = await supabase.from("questions").insert({
+      const { error: qError } = await supabaseAdmin.from("questions").insert({
         paper_id: paperId,
         set_id: null,
         text: q.text,
@@ -153,13 +154,13 @@ export async function uploadContextImage(
   file: File,
 ): Promise<{ url?: string; error?: string }> {
   const filename = `${Date.now()}-${file.name}`;
-  const { error } = await supabase.storage
+  const { error } = await supabaseAdmin.storage
     .from("content-images")
     .upload(filename, file);
 
   if (error) return { error: error.message };
 
-  const { data } = supabase.storage
+  const { data } = supabaseAdmin.storage
     .from("content-images")
     .getPublicUrl(filename);
 
@@ -205,7 +206,7 @@ export type FullPaper = {
 };
 
 export async function getPaperById(id: string): Promise<FullPaper | null> {
-  const { data: paper, error: paperError } = await supabase
+  const { data: paper, error: paperError } = await supabaseAdmin
     .from("pyq_papers")
     .select("*")
     .eq("id", id)
@@ -213,13 +214,13 @@ export async function getPaperById(id: string): Promise<FullPaper | null> {
 
   if (paperError || !paper) return null;
 
-  const { data: sets } = await supabase
+  const { data: sets } = await supabaseAdmin
     .from("question_sets")
     .select("*")
     .eq("paper_id", id)
     .order("order_index", { ascending: true });
 
-  const { data: questions } = await supabase
+  const { data: questions } = await supabaseAdmin
     .from("questions")
     .select("*")
     .eq("paper_id", id)
@@ -240,20 +241,20 @@ export async function updatePaper(
   input: SavePaperInput,
 ): Promise<{ error?: string }> {
   // delete existing questions and sets
-  const { error: qError } = await supabase
+  const { error: qError } = await supabaseAdmin
     .from("questions")
     .delete()
     .eq("paper_id", id);
   if (qError) return { error: qError.message };
 
-  const { error: sError } = await supabase
+  const { error: sError } = await supabaseAdmin
     .from("question_sets")
     .delete()
     .eq("paper_id", id);
   if (sError) return { error: sError.message };
 
   // update paper metadata
-  const { error: pError } = await supabase
+  const { error: pError } = await supabaseAdmin
     .from("pyq_papers")
     .update({ section: input.section, year: input.year, slot: input.slot })
     .eq("id", id);
@@ -264,7 +265,7 @@ export async function updatePaper(
     const group = input.groups[i];
 
     if (group.type === "set") {
-      const { data: set, error: setError } = await supabase
+      const { data: set, error: setError } = await supabaseAdmin
         .from("question_sets")
         .insert({
           paper_id: id,
@@ -279,7 +280,7 @@ export async function updatePaper(
       if (setError) return { error: setError.message };
 
       if (group.questions.length > 0) {
-        const { error: qiError } = await supabase.from("questions").insert(
+        const { error: qiError } = await supabaseAdmin.from("questions").insert(
           group.questions.map((q, qi) => ({
             paper_id: id,
             set_id: set.id,
@@ -297,7 +298,7 @@ export async function updatePaper(
       }
     } else {
       const q = group.question;
-      const { error: qiError } = await supabase.from("questions").insert({
+      const { error: qiError } = await supabaseAdmin.from("questions").insert({
         paper_id: id,
         set_id: null,
         text: q.text,
