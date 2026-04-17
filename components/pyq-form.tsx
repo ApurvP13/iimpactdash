@@ -30,6 +30,7 @@ import {
 
 function emptyQuestion(): DraftQuestion {
   return {
+    label: "",
     text: "",
     options: ["", "", "", ""],
     answer: null,
@@ -62,6 +63,7 @@ function paperToGroups(paper: FullPaper): DraftGroup[] {
       context: set.context,
       context_image_urls: set.context_images ?? [],
       questions: set.questions.map((q) => ({
+        label: q.label ?? "",
         text: q.text,
         options: q.options,
         answer: q.answer,
@@ -75,6 +77,7 @@ function paperToGroups(paper: FullPaper): DraftGroup[] {
     ...paper.standalones.map((q) => ({
       type: "standalone" as const,
       question: {
+        label: q.label ?? "",
         text: q.text,
         options: q.options,
         answer: q.answer,
@@ -99,11 +102,13 @@ function QuestionForm({
   onChange,
   onDelete,
   index,
+  showLabel = false,
 }: {
   question: DraftQuestion;
   onChange: (q: DraftQuestion) => void;
   onDelete: () => void;
   index: number;
+  showLabel?: boolean;
 }) {
   function setField<K extends keyof DraftQuestion>(
     key: K,
@@ -152,6 +157,21 @@ function QuestionForm({
           </Button>
         </div>
       </div>
+
+      {showLabel && (
+        <div className="flex flex-col gap-1.5">
+          <Label className="font-mono text-xs">
+            Question Label{" "}
+            <span className="text-muted-foreground">(optional)</span>
+          </Label>
+          <Input
+            className="font-mono text-sm"
+            placeholder="e.g. Paragraph Completion, Critical Reasoning..."
+            value={question.label}
+            onChange={(e) => setField("label", e.target.value)}
+          />
+        </div>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Label className="font-mono text-xs">Question</Label>
@@ -378,6 +398,7 @@ function SetForm({
                     questions: group.questions.filter((_, idx) => idx !== i),
                   })
                 }
+                showLabel={false}
               />
             ))}
             <Button
@@ -452,6 +473,7 @@ function StandaloneForm({
           question={group.question}
           onChange={(q) => onChange({ ...group, question: q })}
           onDelete={onDelete}
+          showLabel={true}
         />
       )}
     </div>

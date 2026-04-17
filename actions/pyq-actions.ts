@@ -6,6 +6,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 export type Section = "VARC" | "DILR" | "QA";
 
 export type DraftQuestion = {
+  label: string; // optional label for standalone questions; send "" if unused
   text: string;
   options: string[];
   answer: number | null;
@@ -56,8 +57,6 @@ export async function getPapers(): Promise<PYQPaper[]> {
 }
 
 export async function deletePaper(id: string): Promise<{ error?: string }> {
-  // questions and sets have paper_id foreign keys
-  // delete questions first, then sets, then paper
   const { error: qError } = await supabaseAdmin
     .from("questions")
     .delete()
@@ -82,7 +81,6 @@ export async function deletePaper(id: string): Promise<{ error?: string }> {
 export async function savePaper(
   input: SavePaperInput,
 ): Promise<{ error?: string; paperId?: string }> {
-  // 1. insert paper
   const { data: paper, error: paperError } = await supabaseAdmin
     .from("pyq_papers")
     .insert({ section: input.section, year: input.year, slot: input.slot })
@@ -93,7 +91,6 @@ export async function savePaper(
 
   const paperId = paper.id;
 
-  // 2. insert groups in order
   for (let i = 0; i < input.groups.length; i++) {
     const group = input.groups[i];
 
@@ -117,6 +114,7 @@ export async function savePaper(
           group.questions.map((q, qi) => ({
             paper_id: paperId,
             set_id: set.id,
+            label: q.label || null, // always null for set questions but kept for consistency
             text: q.text,
             options: q.options,
             answer: q.answer,
@@ -134,6 +132,7 @@ export async function savePaper(
       const { error: qError } = await supabaseAdmin.from("questions").insert({
         paper_id: paperId,
         set_id: null,
+        label: q.label || null,
         text: q.text,
         options: q.options,
         answer: q.answer,
@@ -180,6 +179,7 @@ export type FullPaper = {
     order_index: number;
     questions: {
       id: string;
+      label: string | null;
       text: string;
       options: string[];
       answer: number | null;
@@ -193,6 +193,7 @@ export type FullPaper = {
   }[];
   standalones: {
     id: string;
+    label: string | null;
     text: string;
     options: string[];
     answer: number | null;
@@ -240,7 +241,6 @@ export async function updatePaper(
   id: string,
   input: SavePaperInput,
 ): Promise<{ error?: string }> {
-  // delete existing questions and sets
   const { error: qError } = await supabaseAdmin
     .from("questions")
     .delete()
@@ -253,14 +253,12 @@ export async function updatePaper(
     .eq("paper_id", id);
   if (sError) return { error: sError.message };
 
-  // update paper metadata
   const { error: pError } = await supabaseAdmin
     .from("pyq_papers")
     .update({ section: input.section, year: input.year, slot: input.slot })
     .eq("id", id);
   if (pError) return { error: pError.message };
 
-  // re-insert groups
   for (let i = 0; i < input.groups.length; i++) {
     const group = input.groups[i];
 
@@ -284,6 +282,7 @@ export async function updatePaper(
           group.questions.map((q, qi) => ({
             paper_id: id,
             set_id: set.id,
+            label: q.label || null,
             text: q.text,
             options: q.options,
             answer: q.answer,
@@ -301,6 +300,7 @@ export async function updatePaper(
       const { error: qiError } = await supabaseAdmin.from("questions").insert({
         paper_id: id,
         set_id: null,
+        label: q.label || null,
         text: q.text,
         options: q.options,
         answer: q.answer,
